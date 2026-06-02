@@ -87,7 +87,7 @@ true → BOOLEANO
 false → BOOLEANO
 ```
 
-### Qué sigue (Día 3 — Persona C)
+### Qué sigue (Fabs, Junio 3)
 
 - Assignment 4: procesar **todos** los archivos de `os.Args[1:]` en un `for`, uno tras otro (versión secuencial)
 - Medir el tiempo total con `time.Now()` / `time.Since()` e imprimirlo al final
