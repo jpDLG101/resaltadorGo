@@ -94,3 +94,34 @@ false → BOOLEANO
 - Probar con: `go run . data/*.txt`
 
 ---
+
+## Día 3 — Persona C (Fabs, 2 Junio)
+
+### Lo que se hizo
+
+- Modificado `main.go` para procesar **todos** los archivos recibidos en `os.Args[1:]`
+- Se itera con un `for range` llamando `resaltador.ProcesarArchivo` por cada ruta
+- Se mide el tiempo total con `time.Now()` antes del loop y `time.Since()` al final
+- `go build ./...` compila sin errores
+
+### Cómo probar
+
+```bash
+go run . data/ejemplo1.txt data/ejemplo2.txt data/ejemplo3.txt
+# o con wildcard:
+go run . data/*.txt
+```
+
+Salida esperada (al final):
+```
+Tiempo total: 507.625µs
+```
+
+### Qué sigue (Persona A, Junio 4)
+
+- Assignment 5: crear `resaltador/resultado.go` con un `struct ResultadoArchivo`
+- Refactorizar para que `ProcesarArchivo` devuelva el struct en lugar de solo imprimir
+- Recolectar resultados en un slice en `main`
+- Assignment 6: versión concurrente con goroutines + WaitGroup, exponer la race condition con `go run -race . data/*.txt`
+
+---
