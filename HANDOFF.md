@@ -125,3 +125,32 @@ Tiempo total: 507.625µs
 - Assignment 6: versión concurrente con goroutines + WaitGroup, exponer la race condition con `go run -race . data/*.txt`
 
 ---
+
+## Día 4 — Persona A (Jp, 4 Junio)
+
+### Lo que se hizo
+
+- A5: agregado `struct Token` y campo `Clasificaciones []Token` a `resaltador/resultado.go`
+- A5: refactorizado `ProcesarArchivo` en `resaltador/archivo.go` para devolver `ResultadoArchivo` con nombre, conteo de tokens, tiempo y clasificaciones
+- A5: `main.go` ahora recolecta resultados en una lista y los imprime al final
+- A6: versión concurrente en `main.go` usando goroutines + `sync.WaitGroup`
+- A6: detectada race condition con `go run -race . data/*.txt`
+
+### Race condition detectada
+
+Varias goroutines hacen `append` a la misma variable global `resultados` al mismo tiempo. Como todas la comparten sin coordinación, pueden pisarse entre sí al escribir — una goroutine puede sobreescribir lo que otra acaba de agregar o corromper la estructura interna.
+
+### Cómo probar
+
+```bash
+go run -race . data/*.txt
+```
+
+### Qué sigue (Día 5 — Persona B)
+
+- Assignment 7: eliminar la race condition usando un **channel** para recolectar resultados
+- Cada goroutine envía su `ResultadoArchivo` por el channel en lugar de hacer `append`
+- `main` recibe del channel y arma el slice (sin compartir variables)
+- Verificar con `go run -race . data/*.txt` que no haya DATA RACE
+
+---
