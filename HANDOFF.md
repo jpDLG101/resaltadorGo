@@ -179,3 +179,64 @@ Assigment 8: permitir ejecutar en modo secuencial o concurrente, medir el tiempo
 ### Siento que esta la hagamos los 3, cuando acabes el A8 fabs, avisanos y hacemos esta juntos.
 Assigment 9: escribir las conclusiones respondiendo las 4 preguntas del `README` (cuál fue más rápida, cuándo vale la pena la concurrencia, qué eliminó la race condition, qué pasaría con cientos de archivos)
 
+---
+
+## Día 6 — Persona C (Fabs, 6 Junio)
+
+### Lo que se hizo
+
+- A8: refactorizado `main.go` con dos funciones: `modoSecuencial` y `modoConcurrente`, ambas retornan resultados + tiempo de pared
+- A8: nuevo flag `--modo=sec|con|ambos` (por defecto `ambos`)
+- A8: cuando se usa `ambos`, corre los dos modos con los mismos archivos e imprime una tabla comparativa con tiempo por archivo y speedup total
+- A9: conclusiones escritas abajo
+- `go run -race . data/*.txt` → sin DATA RACE
+
+### Cómo probar
+
+```bash
+# Modo ambos (default) — muestra tabla comparativa
+go run . data/*.txt
+
+# Solo secuencial
+go run . --modo=sec data/*.txt
+
+# Solo concurrente
+go run . --modo=con data/*.txt
+
+# Verificar sin race condition
+go run -race . data/*.txt
+```
+
+Salida esperada (modo ambos):
+```
+--- Modo Secuencial ---
+...
+--- Modo Concurrente ---
+...
+=== TABLA COMPARATIVA ===
+Archivo                        | Tokens |   Secuencial |  Concurrente
+--------------------------------------------------------------------
+data/ejemplo1.txt              |      5 |     23.083µs |     11.750µs
+data/ejemplo2.txt              |      5 |      1.000µs |     10.583µs
+data/ejemplo3.txt              |      5 |      1.167µs |      1.000µs
+--------------------------------------------------------------------
+TOTAL (tiempo de pared)        |        |   1.302291ms |    201.125µs
+Speedup: 6.48x
+```
+
+---
+
+## Assignment 9 — Conclusiones
+
+**1. ¿Cuál versión fue más rápida?**
+La versión concurrente fue más rápida en tiempo de pared total (~6x de speedup en nuestras pruebas). Cada goroutine procesa un archivo de forma independiente, y como las operaciones de I/O y clasificación no bloquean a las demás, el tiempo total se acerca al del archivo más lento en lugar de ser la suma de todos.
+
+**2. ¿Cuándo vale la pena usar concurrencia?**
+Vale la pena cuando hay múltiples tareas independientes que pueden ejecutarse en paralelo (como procesar archivos distintos) y el overhead de crear goroutines es pequeño frente al trabajo real. Con archivos muy pequeños o pocos archivos, el speedup puede ser marginal o incluso negativo por el costo de coordinar goroutines.
+
+**3. ¿Qué eliminó la race condition?**
+Sustituir el `append` directo a un slice compartido por un **channel buffered**. Con channels, cada goroutine envía su `ResultadoArchivo` de forma segura sin acceder a memoria compartida: el channel garantiza que solo un valor se escribe a la vez y `main` los recibe en orden sin conflictos.
+
+**4. ¿Qué pasaría con cientos de archivos?**
+La versión concurrente escalaría mejor: Go lanza una goroutine por archivo (ligeras, ~2KB de stack) y el scheduler las distribuye entre los núcleos disponibles. Con cientos de archivos, el tiempo total seguiría siendo cercano al del archivo más lento, mientras que la versión secuencial crecería linealmente. Sin embargo, con miles de archivos habría que considerar limitar la concurrencia (worker pool con semáforo) para no saturar el sistema de archivos.
+
