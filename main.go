@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"resaltadorgo/resaltador"
-	"sync"
 )
 
 func main() {
@@ -13,19 +12,19 @@ func main() {
 		return
 	}
 
-	resultados := []resaltador.ResultadoArchivo{}
-	
-	var wg sync.WaitGroup
+	archivos := os.Args[1:]
+	ch := make(chan resaltador.ResultadoArchivo, len(archivos))
 
-	for _, ruta := range os.Args[1:] {
-		wg.Add(1)
-		go func (ruta string)  {
-			defer wg.Done()
-			r := resaltador.ProcesarArchivo(ruta)
-			resultados = append(resultados, r)
+	for _, ruta := range archivos {
+		go func(ruta string) {
+			ch <- resaltador.ProcesarArchivo(ruta)
 		}(ruta)
 	}
-	wg.Wait()
+
+	var resultados []resaltador.ResultadoArchivo
+	for range archivos {
+		resultados = append(resultados, <-ch)
+	}
 
 	for _, r := range resultados {
 		fmt.Printf("=== %s | Tokens: %d | Tiempo: %s ===\n", r.Nombre, r.Tokens, r.Tiempo)

@@ -154,3 +154,28 @@ go run -race . data/*.txt
 - Verificar con `go run -race . data/*.txt` que no haya DATA RACE
 
 ---
+
+## Día 5 — Persona B (RICKY, 5 Junio)
+
+### Lo que se hizo
+
+- Modifique el main.go, quite los `WaitGroup` xq ya no hacen falta, el loop de recepción espera hasta que ya esten todos los resultados y ya despues continua.
+- Automaticamente se elimina sync de los imports porque ya no se usa.
+- Se declaró el channel y trae los valores de `ResultadoArchivo` con length(archivos)
+- Ya no se hace un append normal y cada goroutine se manda directamente a channel y ahi guarda los valores
+
+### Cómo probar
+
+```bash
+go run -race . data/*.txt
+```
+### Resultado
+que corra sin ningún WARNING: DATA RACE.
+
+### Qué sigue (Día 6 — Persona C)
+
+Assigment 8: permitir ejecutar en modo secuencial o concurrente, medir el tiempo de ambas versiones con el mismo conjunto de archivos, y construir una tabla comparativa
+
+### Siento que esta la hagamos los 3, cuando acabes el A8 fabs, avisanos y hacemos esta juntos.
+Assigment 9: escribir las conclusiones respondiendo las 4 preguntas del `README` (cuál fue más rápida, cuándo vale la pena la concurrencia, qué eliminó la race condition, qué pasaría con cientos de archivos)
+
